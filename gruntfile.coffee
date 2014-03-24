@@ -18,7 +18,9 @@ module.exports = (grunt) ->
     # Project settings
     pkg: grunt.file.readJSON 'package.json'
     cfg:
-      fed: grunt.file.readJSON 'fedConfig.json'
+      server:
+        hostname: '127.0.0.1'
+        port: 3000
       path:
         src: "frontend"
         build: ".tmp"
@@ -49,6 +51,11 @@ module.exports = (grunt) ->
         tasks: ['newer:less', 'autoprefixer']
         options: 
           livereload: true
+     
+      html:
+        files: ['<%= cfg.path.src %>/index.html']
+        options: 
+          livereload: true
 
       gruntfile: 
         files: ['gruntfile.coffee']
@@ -57,16 +64,16 @@ module.exports = (grunt) ->
     # Open browser
     open: {
       dev : 
-        path: 'http://<%= cfg.fed.server.hostname%>:<%= cfg.fed.server.port%>',
+        path: 'http://<%= cfg.server.hostname%>:<%= cfg.server.port%>',
         app: 'Google Chrome'
     }
 
     # The actual grunt server settings
     connect: {
       options: 
-        port: '<%= cfg.fed.server.port%>'
+        port: '<%= cfg.server.port%>'
         # Change this to '0.0.0.0' to access the server from outside.
-        hostname: '<%= cfg.fed.server.hostname%>'
+        hostname: '<%= cfg.server.hostname%>'
         livereload: 35729
       
       livereload:
@@ -136,10 +143,10 @@ module.exports = (grunt) ->
     }
 
     # Automatically inject Bower components into the app
-    'bower-install': {
-      src: 
-        html: '<%= cfg.path.src %>/index.html',
+    'bowerInstall': {
+      target:
         ignorePath: '<%= cfg.path.src %>/'
+        src: ['<%= cfg.path.src %>/index.html']
     }
 
     # Renames files for browser caching purposes
@@ -212,7 +219,8 @@ module.exports = (grunt) ->
     # concat, minify and revision files. Creates configurations in memory so
     # additional tasks can operate on them
     useminPrepare: {
-      html: '<%= cfg.path.src %>/index.html',
+      target:
+        src: ['<%= cfg.path.src %>/index.html']
       options: 
         dest: '<%= cfg.path.dist %>'
     }
@@ -292,7 +300,7 @@ module.exports = (grunt) ->
       return grunt.task.run(['build', 'connect:dist:keepalive'])
     grunt.task.run([
       'clean:server'
-      'bower-install'
+      'bowerInstall'
       'coffee'
       'less'
       'copy:styles'
@@ -304,7 +312,7 @@ module.exports = (grunt) ->
 
   grunt.registerTask 'build', [
     'clean:dist'
-    'bower-install'
+    'bowerInstall'
     'useminPrepare'
     'coffee'
     'less'
